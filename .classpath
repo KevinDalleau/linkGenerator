@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/opencsv-2.3.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/httpclient-4.2.6.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/httpclient-cache-4.2.6.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/httpcore-4.2.5.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jackson-annotations-2.3.0.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jackson-core-2.3.3.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jackson-databind-2.3.3.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jcl-over-slf4j-1.7.6.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jena-arq-2.13.0.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jena-core-2.13.0.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jena-iri-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jena-sdb-1.5.1.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jena-tdb-1.1.2.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/jsonld-java-0.5.1.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/libthrift-0.9.2.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/slf4j-api-1.7.6.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/slf4j-log4j12-1.7.6.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/xercesImpl-2.11.0.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/xml-apis-1.4.01.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

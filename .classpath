@@ -22,5 +22,6 @@
 	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/slf4j-log4j12-1.7.6.jar"/>
 	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/xml-apis-1.4.01.jar"/>
+	<classpathentry kind="lib" path="/home/kevin/workspace/linkGenerator/lib/mapper-0.0.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

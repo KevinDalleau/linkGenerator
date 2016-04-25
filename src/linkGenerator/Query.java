@@ -29,6 +29,52 @@ public class Query {
 		return entrezId;
 	}
 	
+	public ArrayList<String> getGeneAttributes(String geneEntrezId) {
+		ArrayList<String> output = new ArrayList();
+		String query = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+				"			PREFIX  foaf: <http://xmlns.com/foaf/0.1/>\n" + 
+				"			PREFIX  ncit: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>\n" + 
+				"			PREFIX  sio:  <http://semanticscience.org/resource/>\n" + 
+				"			PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\n" + 
+				"			PREFIX  owl:  <http://www.w3.org/2002/07/owl#>\n" + 
+				"			PREFIX  wp:   <http://vocabularies.wikipathways.org/wp#>\n" + 
+				"			PREFIX  void: <http://rdfs.org/ns/void#>\n" + 
+				"			PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+				"			PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>\n" + 
+				"			PREFIX  dcterms: <http://purl.org/dc/terms/>\n" + 
+				"			SELECT DISTINCT ?attributes\n" + 
+				"			WHERE {\n" + 
+				"			 {\n" + 
+				"			  ?gda sio:SIO_000253 ?source .\n" + 
+				"			   ?source <http://www.w3.org/ns/prov#wasGeneratedBy> <http://purl.obolibrary.org/obo/ECO_0000218>. #Données CURATED\n" + 
+				"			   ?gda sio:SIO_000628 <http://identifiers.org/ncbigene/"+geneEntrezId+">.\n" + 
+				"               \n" + 
+				"			   <http://identifiers.org/ncbigene/"+geneEntrezId+"> rdf:type ncit:C16612 .\n" + 
+				"			  <http://identifiers.org/ncbigene/"+geneEntrezId+"> sio:SIO_000062 ?pathway_id .\n" + 
+				"			  	?pathway_id dcterms:title ?attributes .\n" + 
+				"			 }\n" + 
+				"\n" + 
+				"			 UNION {\n" + 
+				"			?gda sio:SIO_000253 ?source .\n" + 
+				"			   ?source <http://www.w3.org/ns/prov#wasGeneratedBy> <http://purl.obolibrary.org/obo/ECO_0000218>. #Données CURATED\n" + 
+				"			   ?gda sio:SIO_000628 <http://identifiers.org/ncbigene/"+geneEntrezId+">.\n" + 
+				"			   <http://identifiers.org/ncbigene/"+geneEntrezId+"> rdf:type ncit:C16612 .\n" + 
+				"			  	<http://identifiers.org/ncbigene/"+geneEntrezId+"> sio:SIO_000095 ?class_id .\n" + 
+				"			   ?class_id dcterms:title ?attributes.\n" + 
+				"			}\n" + 
+				"			 }\n" + 
+				"\n";
+		QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", query);
+		queryExec.addParam("timeout", "3600000");
+		ResultSet geneAttributesRS = queryExec.execSelect();
+		while(geneAttributesRS.hasNext()) {
+			QuerySolution solution = geneAttributesRS.next();
+			String attribute = solution.get("attributes").toString();
+			output.add(attribute);
+		}
+		return output;
+	}
+	
 	public HashMap<String,String> getGeneDiseasesLinks(String geneEntrezId) {
 		HashMap<String, String> output = new HashMap();
 		String query = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 

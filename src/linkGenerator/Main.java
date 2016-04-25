@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,8 +36,13 @@ public class Main {
 			String drug = pair[1];
 			String geneEntrezId = query.getEntrezId(gene); // Mapping from PharmGKB to Entrez ID
 			System.out.println(geneEntrezId);
+			/* Gene attributes */
+			ArrayList<String> geneAttributes = query.getGeneAttributes(geneEntrezId);
+			System.out.println("Gene Attributes "+geneAttributes.toString());
+			/* Links from genes to disease */
 			HashMap<String, String> geneDiseasesLinks = query.getGeneDiseasesLinks(geneEntrezId);
 			System.out.println(geneDiseasesLinks.toString());
+			
 			
 			
 		}

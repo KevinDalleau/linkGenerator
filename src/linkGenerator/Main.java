@@ -60,6 +60,7 @@ public class Main {
 			ArrayList<String> drugStitchIds = query.drugStitchId(drug);
 			if(drugStitchIds != null) {
 				System.out.println(drugStitchIds.toString());
+				System.out.println(query.getDrugDiseaseRelationsFromSider(drugStitchIds).toString());
 			}
 			
 			

@@ -166,7 +166,8 @@ public class Query {
 	}
 	
 	
-	public QueryEngineHTTP getDrugDiseaseRelationsFromSider(ArrayList<String> drug_Stitch_ids) {
+	public HashMap<String,String> getDrugDiseaseRelationsFromSider(ArrayList<String> drug_Stitch_ids) {
+		HashMap<String,String> output = new HashMap();
 		stitchValues = "";
 		for(int i=0; i < drug_Stitch_ids.size(); i++) {
 			stitchValues += "(<http://bio2rdf.org/stitch:-".concat(Integer.toString((Integer.parseInt(drug_Stitch_ids.get(i))+100000000))).concat(">)");
@@ -197,7 +198,14 @@ public class Query {
 					"";
 				QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
 				queryExec.addParam("timeout","3600000");
-				return queryExec;
+				ResultSet drugdisLinksRS = queryExec.execSelect();
+				while(drugdisLinksRS.hasNext()) {
+					QuerySolution solution = drugdisLinksRS.next();
+					String disease = solution.get("disease").toString();
+					String linkLabel = solution.get("2_hops_links_2").toString();
+					output.put(disease, linkLabel);
+				}
+				return output;
 		}
 		
 	

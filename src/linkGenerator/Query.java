@@ -207,6 +207,30 @@ public class Query {
 				}
 				return output;
 		}
+	
+	public HashMap<String,String> getDrugDiseaseRelationsFromMedispan(String drugUMLS) {
+		HashMap<String,String> output = new HashMap();
+		String queryLinks = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+				"SELECT ?2_hops_links_2 ?disease\n" + 
+				"WHERE {\n" + 
+				"  <http://orpailleur.fr/medispan/"+drugUMLS+"> ?2_hops_links2_uri ?disease_uri.\n" + 
+				"  #?drug_uri rdf:type <http://orpailleur.fr/medispan/drug>.\n" + 
+				"  ?disease_uri rdf:type <http://orpailleur.fr/medispan/event>\n" + 
+				"    BIND(REPLACE(str(?drug_uri), \"http://orpailleur.fr/medispan/\",\"\") AS ?drug)\n" + 
+				"    BIND(REPLACE(str(?disease_uri), \"http://orpailleur.fr/medispan/\",\"\") AS ?disease)\n" + 
+				"  BIND(REPLACE(str(?2_hops_links2_uri), \"http://orpailleur.fr/medispan/\", \"\") AS ?2_hops_links2)\n" + 
+				"}";
+				QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
+				queryExec.addParam("timeout","3600000");
+				ResultSet drugdisLinksRS = queryExec.execSelect();
+				while(drugdisLinksRS.hasNext()) {
+					QuerySolution solution = drugdisLinksRS.next();
+					String disease = solution.get("disease").toString();
+					String linkLabel = solution.get("2_hops_links_2").toString();
+					output.put(disease, linkLabel);
+				}
+				return output;
+		}
 		
 	
 	

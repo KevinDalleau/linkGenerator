@@ -56,11 +56,19 @@ public class Main {
 			///////////////////
 			/* Drug handling */
 			///////////////////
-			System.out.println("Drug "+drug);
+			
 			ArrayList<String> drugStitchIds = query.drugStitchId(drug);
+			String drugUMLS = mapper.getUMLS_from_PharmGKB(drug);
+			System.out.println("Drug "+drug);
+			System.out.println("UMLS id for this drug :"+ drugUMLS);
 			if(drugStitchIds != null) {
-				System.out.println(drugStitchIds.toString());
-				System.out.println(query.getDrugDiseaseRelationsFromSider(drugStitchIds).toString());
+				HashMap<String,String> drugDiseasesLinksSider = query.getDrugDiseaseRelationsFromSider(drugStitchIds);
+				//System.out.println(drugStitchIds.toString());
+				//System.out.println(drugDiseasesLinks.toString());
+			}
+			if(drugUMLS != null) {
+				HashMap<String,String> drugDiseaseLinksMedispan = query.getDrugDiseaseRelationsFromMedispan(drugUMLS);
+				System.out.println(drugDiseaseLinksMedispan.toString());
 			}
 			
 			

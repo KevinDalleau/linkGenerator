@@ -7,6 +7,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import au.com.bytecode.opencsv.CSVReader;
 import fr.kevindalleau.Mapper.Mapper;
@@ -49,7 +52,7 @@ public class Main {
 			ArrayList<String> geneAttributes = query.getGeneAttributes(geneEntrezId);
 			//System.out.println("Gene Attributes "+geneAttributes.toString());
 			
-			/* Links from genes to disease */
+			/* Links from genes to diseases */
 			HashMap<String, String> geneDiseasesLinks = query.getGeneDiseasesLinks(geneEntrezId);
 			//System.out.println(geneDiseasesLinks.toString());
 			
@@ -61,19 +64,41 @@ public class Main {
 			String drugUMLS = mapper.getUMLS_from_PharmGKB(drug);
 			System.out.println("Drug "+drug);
 			System.out.println("UMLS id for this drug :"+ drugUMLS);
+			
+			/* Drug attributes */
+			ArrayList<String> drugAttributes = query.getAtcCodes(drug);
+			System.out.println(drug);
+			System.out.println("Drug attributes :"+drugAttributes.toString());
+			
+			
+			/* Links from drugs to diseases */
+			
+			HashMap<String,String> drugDiseasesLinks = new HashMap<String,String>(); // If a common key (i.e a disease) is found, the other is replaced, but it's not a problem here
+
 			if(drugStitchIds != null) {
 				HashMap<String,String> drugDiseasesLinksSider = query.getDrugDiseaseRelationsFromSider(drugStitchIds);
+				drugDiseasesLinks.putAll(drugDiseasesLinksSider);
 				//System.out.println(drugStitchIds.toString());
 				//System.out.println(drugDiseasesLinks.toString());
 			}
 			if(drugUMLS != null) {
-				HashMap<String,String> drugDiseaseLinksMedispan = query.getDrugDiseaseRelationsFromMedispan(drugUMLS);
-				System.out.println(drugDiseaseLinksMedispan.toString());
+				HashMap<String,String> drugDiseasesLinksMedispan = query.getDrugDiseaseRelationsFromMedispan(drugUMLS);
+				drugDiseasesLinks.putAll(drugDiseasesLinksMedispan);
 			}
+			System.out.println(drugDiseasesLinks.toString());
+
+			///////////////////////
+			/* Diseases handling */
+			///////////////////////
 			
 			
-			
-			
+			HashMap<String,String> diseaseGlobalMap = new HashMap<String,String>();
+			diseaseGlobalMap = (HashMap<String, String>) Stream.of(geneDiseasesLinks, drugDiseasesLinks).flatMap(m -> m.entrySet().stream())
+				       .collect(Collectors.toMap(Entry::getKey, Entry::getValue,(link1, link2) -> {
+			                 System.out.println("duplicate key found!");
+			                 return link1;
+			             }));
+			System.out.println("Diseases linked :"+ diseaseGlobalMap.toString());
 		}
 		reader.close();
 	}

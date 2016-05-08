@@ -95,6 +95,32 @@ public class Query {
 		}
 		return output;
 	}
+	
+	public ArrayList<String> getAtcCodes(String drugPharmgGKB_id) {
+		ArrayList<String> output = new ArrayList();
+		if(drugPharmgGKB_id !=null) {
+			String queryLinks = "PREFIX void: <http://rdfs.org/ns/void#>\n" + 
+					"			PREFIX dv: <http://bio2rdf.org/bio2rdf.dataset_vocabulary:>\n" + 
+					"			SELECT ?atc\n" + 
+					"			WHERE {\n" + 
+					"			<http://bio2rdf.org/pharmgkb:"+drugPharmgGKB_id+"> <http://bio2rdf.org/pharmgkb_vocabulary:x-atc> ?atc_uri.\n" + 
+					"			BIND(replace(str(?atc_uri), \"http://bio2rdf.org/atc:\", \"\") AS ?atc)\n" + 
+					"			}";
+			QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
+			queryExec.addParam("timeout","3600000");
+			ResultSet drugATCRS = queryExec.execSelect();
+			while(drugATCRS.hasNext()) {
+				QuerySolution solution = drugATCRS.next();
+				String atc = solution.get("atc").toString();
+				output.add(atc);	
+			}
+			return output;
+			
+		}
+
+		else return null;
+		}
+	
 	public HashMap<String,String> getGeneDiseasesLinks(String geneEntrezId) {
 		HashMap<String, String> output = new HashMap();
 		String query = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
@@ -279,5 +305,49 @@ public class Query {
 			return null;
 		}
 	}
-
+	
+	public ArrayList<String> getDiseaseAttributes(String disease_UMLSID) {
+		ArrayList<String> output = new ArrayList();
+		if(disease_UMLSID !=null) {
+			String queryLinks = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+					"PREFIX  foaf: <http://xmlns.com/foaf/0.1/>\n" + 
+					"PREFIX  ncit: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>\n" + 
+					"PREFIX  sio:  <http://semanticscience.org/resource/>\n" + 
+					"PREFIX  xsd:  <http://www.w3.org/2001/XMLSchema#>\n" + 
+					"PREFIX  owl:  <http://www.w3.org/2002/07/owl#>\n" + 
+					"PREFIX  wp:   <http://vocabularies.wikipathways.org/wp#>\n" + 
+					"PREFIX  void: <http://rdfs.org/ns/void#>\n" + 
+					"PREFIX  rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+					"PREFIX  skos: <http://www.w3.org/2004/02/skos/core#>\n" + 
+					"PREFIX  dcterms: <http://purl.org/dc/terms/>\n" + 
+					"SELECT DISTINCT ?attributes\n" + 
+					"WHERE {\n" + 
+					" {\n" + 
+					"  ?gda sio:SIO_000253 ?source .\n" + 
+					"   ?source <http://www.w3.org/ns/prov#wasGeneratedBy> <http://purl.obolibrary.org/obo/ECO_0000218>. #Données CURATED\n" + 
+					"   <http://linkedlifedata.com/resource/umls/id/"+disease_UMLSID+"> rdf:type ncit:C7057 .\n" + 
+					"   <http://linkedlifedata.com/resource/umls/id/"+disease_UMLSID+"> sio:SIO_000008 ?attributes .\n" + 
+					"	BIND(REPLACE(str(?disease_uri), \"http://linkedlifedata.com/resource/umls/id/\",\"\") AS ?disease)\n" + 
+					" }\n" + 
+					"	UNION {\n" + 
+					"   ?gda sio:SIO_000253 ?source .\n" + 
+					"   ?source <http://www.w3.org/ns/prov#wasGeneratedBy> <http://purl.obolibrary.org/obo/ECO_0000218>. #Données CURATED\n" + 
+					"   <http://linkedlifedata.com/resource/umls/id/"+disease_UMLSID+"> rdf:type ncit:C7057 .\n" + 
+					"   <http://linkedlifedata.com/resource/umls/id/"+disease_UMLSID+"> sio:SIO_000095 ?attributes_uri .\n" + 
+					"   ?attributes_uri rdfs:isDefinedBy ?attributes.\n" + 
+					"	 BIND(REPLACE(str(?disease_uri), \"http://linkedlifedata.com/resource/umls/id/\",\"\") AS ?disease)\n" + 
+					" }\n" + 
+					"	}\n" + 
+					"";
+			QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
+			queryExec.addParam("timeout","3600000");
+			ResultSet diseaseAttributesRS = queryExec.execSelect();
+			while(diseaseAttributesRS.hasNext()) {
+				QuerySolution solution = diseaseAttributesRS.next();
+				String attributes = solution.get("attributes").toString();
+				output.add(attributes);	
+			}
+	}
+		return output;
+}
 }

@@ -95,7 +95,7 @@ public class Main {
 			HashMap<String,String> diseaseGlobalMap = new HashMap<String,String>();
 			diseaseGlobalMap = (HashMap<String, String>) Stream.of(geneDiseasesLinks, drugDiseasesLinks).flatMap(m -> m.entrySet().stream())
 				       .collect(Collectors.toMap(Entry::getKey, Entry::getValue,(link1, link2) -> {
-			                 System.out.println("duplicate key found!");
+			                 System.out.println("duplicate key found!"+link1+link2);
 			                 return link1;
 			             }));
 			System.out.println("Diseases linked :"+ diseaseGlobalMap.toString());

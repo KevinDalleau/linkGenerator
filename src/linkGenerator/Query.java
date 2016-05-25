@@ -29,6 +29,50 @@ public class Query {
 		return entrezId;
 	}
 	
+	public String getDrugBankID(String drugPharmGKBID) {
+		String drugbankID= "";
+
+		String query="SELECT ?drugbank_id\n" + 
+				"WHERE { \n" + 
+				"<http://biodb.jp/mappings/pharmgkb_id/"+drugPharmGKBID+"> <http://biodb.jp/mappings/to_drugbank_id> ?drugbank_id_uri\n" + 
+				"FILTER regex(str(?drugbank_id_uri), \"http://biodb.jp/mappings/drugbank_id/\") \n" + 
+				"BIND(REPLACE(str(?drugbank_id_uri), \"http://biodb.jp/mappings/drugbank_id/\",\"\") AS ?drugbank_id) \n" + 
+				"}";
+		QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", query);
+		queryExec.addParam("timeout", "3600000");
+		ResultSet drugBankIDResultSet = queryExec.execSelect();
+		while(drugBankIDResultSet.hasNext()) {
+			QuerySolution drugBankIDSolution = drugBankIDResultSet.nextSolution();
+			drugbankID= drugBankIDSolution.get("drugbank_id").toString();
+		}
+		return drugbankID;
+	}
+	
+	
+	public String getUniprotId(String genePharmGKBID) {
+		String output = "";
+		String queryLinks = "PREFIX biodb: <http://biodb.jp/mappings/>\n" + 
+				"SELECT DISTINCT ?uniprot_id\n" + 
+				"WHERE {\n" + 
+				"<http://biodb.jp/mappings/pharmgkb_id/"+genePharmGKBID+"> biodb:to_uniprot_id ?uniprot_id_uri.\n" + 
+				"BIND(replace(str(?uniprot_id_uri),\"http://biodb.jp/mappings/uniprot_id/\",\"\") AS ?uniprot_id)\n" + 
+				"}\n" + 
+				"\n" + 
+				"LIMIT 10\n" + 
+				"\n" + 
+				"\n" + 
+				"";
+		QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
+		queryExec.addParam("timeout", "3600000");
+		ResultSet uniProtIDResultSet = queryExec.execSelect();
+		while(uniProtIDResultSet.hasNext()) {
+			QuerySolution uniprotIDSolution = uniProtIDResultSet.nextSolution();
+			output = uniprotIDSolution.get("uniprot_id").toString();
+		}
+		
+		return output;
+	}
+	
 	public ArrayList<String> getGeneAttributes(String geneEntrezId) {
 		ArrayList<String> output = new ArrayList();
 		String query = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
@@ -97,15 +141,17 @@ public class Query {
 	}
 	
 	public ArrayList<String> getAtcCodes(String drugPharmgGKB_id) {
-		ArrayList<String> output = new ArrayList();
+		ArrayList<String> output = new ArrayList<String>();
 		if(drugPharmgGKB_id !=null) {
-			String queryLinks = "PREFIX void: <http://rdfs.org/ns/void#>\n" + 
-					"			PREFIX dv: <http://bio2rdf.org/bio2rdf.dataset_vocabulary:>\n" + 
-					"			SELECT ?atc\n" + 
-					"			WHERE {\n" + 
-					"			<http://bio2rdf.org/pharmgkb:"+drugPharmgGKB_id+"> <http://bio2rdf.org/pharmgkb_vocabulary:x-atc> ?atc_uri.\n" + 
-					"			BIND(replace(str(?atc_uri), \"http://bio2rdf.org/atc:\", \"\") AS ?atc)\n" + 
-					"			}";
+			String queryLinks = "PREFIX void: <http://rdfs.org/ns/void#> \n" + 
+					"PREFIX dv: <http://bio2rdf.org/bio2rdf.dataset_vocabulary:> \n" + 
+					"SELECT ?atc\n" + 
+					"WHERE { \n" + 
+					"<http://bio2rdf.org/pharmgkb:"+drugPharmgGKB_id+"> <http://bio2rdf.org/pharmgkb_vocabulary:x-drugbank> ?drugbank_uri.\n" + 
+					"BIND(replace(str(?drugbank_uri), \"http://bio2rdf.org/drugbank:\", \"\") AS ?drugbank_id)\n" + 
+					"?drugbank_uri <http://bio2rdf.org/drugbank_vocabulary:x-atc> ?atc_uri\n" + 
+					"BIND(replace(str(?atc_uri), \"http://bio2rdf.org/atc:\", \"\") AS ?atc) \n" + 
+					"}";
 			QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
 			queryExec.addParam("timeout","3600000");
 			ResultSet drugATCRS = queryExec.execSelect();
@@ -350,4 +396,33 @@ public class Query {
 	}
 		return output;
 }
+	public ArrayList<String> getGeneDrugLinks(String geneUniprotId, String drugDBID) {
+		ArrayList<String> output = new ArrayList<String>();
+	
+		if(geneUniprotId !="" && drugDBID != "") {
+			String queryLinks = "PREFIX http: <http://www.w3.org/2011/http#>\n" + 
+					"prefix owl: <http://www.w3.org/2002/07/owl#>\n" + 
+					"prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+					"SELECT DISTINCT ?target ?action\n" + 
+					"WHERE {\n" + 
+					"<http://bio2rdf.org/drugbank:"+drugDBID+"> <http://bio2rdf.org/drugbank_vocabulary:target> ?target_uri.\n" + 
+					"?target_uri <http://bio2rdf.org/drugbank_vocabulary:x-uniprot> <http://bio2rdf.org/uniprot:"+geneUniprotId+">.\n" + 
+					"?target_uri <http://bio2rdf.org/bio2rdf_vocabulary:identifier> ?target.\n" + 
+					"BIND(uri(\"http://bio2rdf.org/drugbank_resource:"+drugDBID+"_\"+?target) AS ?relation_uri)\n" + 
+					"?relation_uri <http://bio2rdf.org/drugbank_vocabulary:action> ?action_uri\n" + 
+					"BIND(replace(str(?action_uri), \"http://bio2rdf.org/drugbank_vocabulary:\",\"\") AS ?action)\n" + 
+					"}";
+			QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
+			queryExec.addParam("timeout","3600000");
+			ResultSet gdLinksRS = queryExec.execSelect();
+			while(gdLinksRS.hasNext()) {
+				QuerySolution solution = gdLinksRS.next();
+				String action = solution.get("action").toString();
+				output.add(action);	
+			}
+	}
+		return output;
+}
+	
+	
 }

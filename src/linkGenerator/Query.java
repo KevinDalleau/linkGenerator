@@ -167,8 +167,8 @@ public class Query {
 		else return null;
 		}
 	
-	public HashMap<String,String> getGeneDiseasesLinks(String geneEntrezId) {
-		HashMap<String, String> output = new HashMap();
+	public HashMap<String,ArrayList<String>> getGeneDiseasesLinks(String geneEntrezId) {
+		HashMap<String, ArrayList<String>> output = new HashMap<String, ArrayList<String>>();
 		String query = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
 				"PREFIX  foaf: <http://xmlns.com/foaf/0.1/>\n" + 
 				"PREFIX  ncit: <http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#>\n" + 
@@ -232,7 +232,14 @@ public class Query {
 			QuerySolution solution = gdLinksRS.next();
 			String disease = solution.get("disease").toString();
 			String linkLabel = solution.get("2_hops_links_1").toString();
-			output.put(disease, linkLabel);
+			if(output.containsKey(disease)) {
+				output.get(disease).add(linkLabel);
+			}
+			else {
+				ArrayList<String> connections = new ArrayList<String>();
+				connections.add(linkLabel);
+				output.put(disease, connections);
+			}
 		}
 		return output;
 	}
@@ -268,6 +275,7 @@ public class Query {
 					"  BIND(REPLACE(str(?disease_uri), \"http://bio2rdf.org/umls:\",\"\") AS ?disease)\n" + 
 					"  }}\n" + 
 					"";
+			
 				QueryEngineHTTP queryExec = (QueryEngineHTTP) QueryExecutionFactory.sparqlService("http://localhost:9999/blazegraph/namespace/kb/sparql", queryLinks);
 				queryExec.addParam("timeout","3600000");
 				ResultSet drugdisLinksRS = queryExec.execSelect();
@@ -281,7 +289,7 @@ public class Query {
 		}
 	
 	public HashMap<String,String> getDrugDiseaseRelationsFromMedispan(String drugUMLS) {
-		HashMap<String,String> output = new HashMap();
+		HashMap<String,String> output = new HashMap<String, String>();
 		String queryLinks = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
 				"SELECT ?2_hops_links_2 ?disease\n" + 
 				"WHERE {\n" + 

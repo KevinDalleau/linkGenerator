@@ -20,6 +20,8 @@ import fr.kevindalleau.Mapper.Mapper;
 
 public class Main {
 
+	private static String[] values;
+
 	public static void main(String[] args) throws IOException {
 		Query query = new Query();
 		Mapper mapper = new Mapper();
@@ -59,7 +61,7 @@ public class Main {
 			ArrayList<String> geneAttributes = query.getGeneAttributes(geneEntrezId);
 			
 			/* Links from genes to diseases */
-			HashMap<String, String> geneDiseasesLinks = query.getGeneDiseasesLinks(geneEntrezId);
+			HashMap<String, ArrayList<String>> geneDiseasesLinks = query.getGeneDiseasesLinks(geneEntrezId);
 			
 			///////////////////
 			/* Drug handling */
@@ -73,7 +75,7 @@ public class Main {
 			/* Drug attributes */
 			ArrayList<String> drugAttributes = query.getAtcCodes(drug);
 			System.out.println(drug);
-			System.out.println("Drug attributes :"+drugAttributes.toString());
+//			System.out.println("Drug attributes :"+drugAttributes.toString());
 			
 			
 			/* Links from drugs to diseases */
@@ -94,14 +96,56 @@ public class Main {
 			///////////////////////
 			
 			
-			HashMap<String,String> diseaseGlobalMap = new HashMap<String,String>();
-			diseaseGlobalMap = (HashMap<String, String>) Stream.of(geneDiseasesLinks, drugDiseasesLinks).flatMap(m -> m.entrySet().stream())
-				       .collect(Collectors.toMap(Entry::getKey, Entry::getValue,(link1, link2) -> {
+//			HashMap<String,String> diseaseGlobalMap = new HashMap<String,String>();
+//			diseaseGlobalMap = (HashMap<String, String>) Stream.of(geneDiseasesLinks, drugDiseasesLinks).flatMap(m -> m.entrySet().stream())
+//				       .collect(Collectors.toMap(Entry::getKey, Entry::getValue,(link1, link2) -> {
 //			                 System.out.println("duplicate key found!"+link1+link2);
-			                 return link1;
-			             }));
+//			                 return link1+","+link2;
+//			             }));
+//			
+//			System.out.println(geneDiseasesLinks.toString());
 			
-			System.out.println(diseaseGlobalMap.toString());
+			HashMap<String, ArrayList<String[]>> diseasesLinks = new HashMap<String,ArrayList<String[]>>();
+			for(String disease : drugDiseasesLinks.keySet()) {
+				ArrayList<String[]> connections = new ArrayList<String[]>();
+				String[] values = new String[2];
+				values[0] = "N,A";
+				values[1] = drugDiseasesLinks.get(disease);
+				connections.add(values);
+				diseasesLinks.put(disease, connections);
+			}
+			
+			for(String disease : geneDiseasesLinks.keySet()) {
+//				ArrayList<String[]> connections = new ArrayList<String[]>();
+				if(diseasesLinks.containsKey(disease)){
+					ArrayList<String[]> connections = diseasesLinks.get(disease);
+					String[] initialValue = diseasesLinks.get(disease).get(0);
+					diseasesLinks.get(disease).remove(0);
+					for(String thl1 : geneDiseasesLinks.get(disease)) {
+						String[] values = new String[2];
+						values[0] = thl1;
+						values[1] = initialValue[1];
+						connections.add(values);
+					}
+					
+					diseasesLinks.put(disease, connections);
+				}
+				else {
+					ArrayList<String[]> connections = new ArrayList<String[]>();
+					for(String thl1 : geneDiseasesLinks.get(disease)) {
+						String[] values = new String[2];
+						values[0] = thl1;
+						values[1] = "N.A";
+						connections.add(values);
+					}
+					diseasesLinks.put(disease, connections);
+				}
+			}
+				
+//			for(String[] rel : diseasesLinks.get("C0003811")) {
+//				System.out.println(rel[0]+" "+rel[1]);
+//			}
+ 			
 			
 			//////////////////////////
 			/* 1-hop links handling */
@@ -115,13 +159,7 @@ public class Main {
 			/* Output handling *//////
 			//////////////////////////
 			
-			String id = gene+"-"+drug;
-//			geneAttributes;
-//			geneDiseasesLinks;
-//			drugDiseasesLinks;
-//			drugAttributes;
-//			one_hops_links;
-			
+			String id = gene+"-"+drug;			
 			
 
 		    LinkedList<List <String>> lists = new LinkedList<List <String>>();
@@ -134,54 +172,62 @@ public class Main {
 		    if(one_hops_links.isEmpty()) {
 		    	one_hops_links.add("NA");
 		    }
-		    ArrayList<String> geneDiseaseLinksList = new ArrayList<String>();
-		    for(String disease : geneDiseasesLinks.keySet()) {
-		    	geneDiseaseLinksList.add(geneDiseasesLinks.get(disease)+","+disease);
-		    }
-		    if(geneDiseaseLinksList.isEmpty()) {
-		    	geneDiseaseLinksList.add("NA,NA");
+//		    ArrayList<String> geneDiseaseLinksList = new ArrayList<String>();
+//		    for(String disease : geneDiseasesLinks.keySet()) {
+//		    	geneDiseaseLinksList.add(geneDiseasesLinks.get(disease)+","+disease);
+//		    }
+//		    if(geneDiseaseLinksList.isEmpty()) {
+//		    	geneDiseaseLinksList.add("NA,NA");
+//		    }
+//		    
+//		    ArrayList<String> drugDiseaseLinksList = new ArrayList<String>();
+//		    for(String disease : drugDiseasesLinks.keySet()) {
+//		    	drugDiseaseLinksList.add(disease+","+drugDiseasesLinks.get(disease));
+//		    }
+//		    if(drugDiseaseLinksList.isEmpty()) {
+//		    	drugDiseaseLinksList.add("NA,NA");
+//		    }
+		    
+		    ArrayList<String> two_hops_links = new ArrayList<String>();
+		    for(String disease : diseasesLinks.keySet()) {
+		    	String toBeAdded = disease;
+		    	for(String[] relations : diseasesLinks.get(disease)) {
+		    		toBeAdded+=","+relations[0]+","+relations[1];
+		    		two_hops_links.add(toBeAdded);
+		    	}
 		    }
 		    
-		    ArrayList<String> drugDiseaseLinksList = new ArrayList<String>();
-		    for(String disease : drugDiseasesLinks.keySet()) {
-		    	drugDiseaseLinksList.add(drugDiseasesLinks.get(disease)+","+disease);
-		    }
-		    if(drugDiseaseLinksList.isEmpty()) {
-		    	drugDiseaseLinksList.add("NA,NA");
-		    }
 		    
 		    lists.add(geneAttributes);
 		    lists.add(drugAttributes);
 		    lists.add(one_hops_links);
-		    lists.add(geneDiseaseLinksList);
-		    lists.add(drugDiseaseLinksList);
+		    lists.add(two_hops_links);
 		    
 		    System.out.println("GA"+geneAttributes);
 		    System.out.println("DA"+drugAttributes);
 		    System.out.println("OHL"+one_hops_links);
-		    System.out.println("THL1"+geneDiseaseLinksList);
-		    System.out.println("THL2"+drugDiseaseLinksList);
+		    System.out.println("THL"+two_hops_links);
 
 
-//		    Set<String> combinations = new TreeSet<String>();
-//		    Set<String> newCombinations;
+		    Set<String> combinations = new TreeSet<String>();
+		    Set<String> newCombinations;
 //
-//		    for (String s: lists.removeFirst()) {
-//		        combinations.add(s);
-//		    }
-//
-//		    while (!lists.isEmpty()) {
-//		        List<String> next = lists.removeFirst();
-//		        newCombinations =  new TreeSet<String>();
-//		        for (String s1: combinations) 
-//		            for (String s2 : next) 
-//		              newCombinations.add(s1+","+s2);               
-//
-//		        combinations = newCombinations;
-//		    }
-//		    for (String s: combinations) {
-//		        System.out.println(s+" ");    
-//		    }
+		    for (String s: lists.removeFirst()) {
+		        combinations.add(s);
+		    }
+
+		    while (!lists.isEmpty()) {
+		        List<String> next = lists.removeFirst();
+		        newCombinations =  new TreeSet<String>();
+		        for (String s1: combinations) 
+		            for (String s2 : next) 
+		              newCombinations.add(s1+","+s2);               
+
+		        combinations = newCombinations;
+		    }
+		    for (String s: combinations) {
+		        System.out.println(s+" ");    
+		    }
 			
 			
 			

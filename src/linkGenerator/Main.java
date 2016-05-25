@@ -3,6 +3,7 @@ package linkGenerator;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +22,10 @@ import fr.kevindalleau.Mapper.Mapper;
 public class Main {
 
 	private static String[] values;
+	
 
 	public static void main(String[] args) throws IOException {
+		PrintWriter writer = new PrintWriter("output.txt", "UTF-8");
 		Query query = new Query();
 		Mapper mapper = new Mapper();
 		Reader notLinkedFile = null;
@@ -109,7 +112,7 @@ public class Main {
 			for(String disease : drugDiseasesLinks.keySet()) {
 				ArrayList<String[]> connections = new ArrayList<String[]>();
 				String[] values = new String[2];
-				values[0] = "N,A";
+				values[0] = "N.A";
 				values[1] = drugDiseasesLinks.get(disease);
 				connections.add(values);
 				diseasesLinks.put(disease, connections);
@@ -194,6 +197,7 @@ public class Main {
 		    	for(String[] relations : diseasesLinks.get(disease)) {
 		    		toBeAdded+=","+relations[0]+","+relations[1];
 		    		two_hops_links.add(toBeAdded);
+		    		toBeAdded = disease;
 		    	}
 		    }
 		    
@@ -226,7 +230,8 @@ public class Main {
 		        combinations = newCombinations;
 		    }
 		    for (String s: combinations) {
-		        System.out.println(s+" ");    
+		        System.out.println(id+","+s+" ");    
+		        writer.println(id+","+s+" ");
 		    }
 			
 			
@@ -234,6 +239,8 @@ public class Main {
 		}
 		reader.close();
 	}
+		writer.close();
+
 
 }
 }
